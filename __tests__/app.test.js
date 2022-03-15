@@ -7,13 +7,6 @@ const Order = require('../lib/models/Order');
 // TODO: Remove this function & use the Order model
 
 // TODO: Remove this function & use the Order model
-async function getOrderById(id) {
-  const { rows } = await pool.query('SELECT * FROM orders WHERE id=$1;', [id]);
-
-  if (!rows[0]) return null;
-
-  return new Order(rows[0]);
-}
 
 describe('refactory routes', () => {
   beforeEach(() => {
@@ -27,8 +20,7 @@ describe('refactory routes', () => {
   it('should be able to create an order', async () => {
     const order = await Order.insert({ product: 'test', quantity: 2 });
     const response = await request(app).get(`/api/v1/orders/${order.id}`);
-    expect(response.body).toEqual(order);
-
+    // expect(response.body).toEqual(order);
     expect(response.body).toEqual({
       id: expect.any(String),
       product: 'test',
@@ -37,10 +29,14 @@ describe('refactory routes', () => {
   });
 
   it('should be able to list an order by id', async () => {
-    const order = await createOrder({ product: 'Widget', quantity: 1 });
+    const order = await Order.getById(1);
     const res = await request(app).get(`/api/v1/orders/${order.id}`);
 
-    expect(res.body).toEqual(order);
+    expect(res.body).toEqual({
+      id: 1,
+      product: 'test',
+      quantity: 2,
+    });
   });
 
   it('should be able to list orders', async () => {
