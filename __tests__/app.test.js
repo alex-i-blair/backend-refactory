@@ -5,20 +5,10 @@ const app = require('../lib/app');
 const Order = require('../lib/models/Order');
 
 // TODO: Remove this function & use the Order model
-async function createOrder({ product, quantity }) {
-  const { rows } = await pool.query(
-    'INSERT INTO orders(product, quantity) VALUES ($1, $2) RETURNING *;',
-    [product, quantity]
-  );
-  return new Order(rows[0]);
-}
 
 // TODO: Remove this function & use the Order model
 async function getOrderById(id) {
-  const { rows } = await pool.query(
-    'SELECT * FROM orders WHERE id=$1;',
-    [id]
-  );
+  const { rows } = await pool.query('SELECT * FROM orders WHERE id=$1;', [id]);
 
   if (!rows[0]) return null;
 
@@ -35,14 +25,14 @@ describe('refactory routes', () => {
   });
 
   it('should be able to create an order', async () => {
-    const res = await request(app)
-      .post('/api/v1/orders')
-      .send({ product: 'Widget', quantity: 1 });
+    const order = await Order.insert({ product: 'test', quantity: 2 });
+    const response = await request(app).get(`/api/v1/orders/${order.id}`);
+    expect(response.body).toEqual(order);
 
-    expect(res.body).toEqual({
+    expect(response.body).toEqual({
       id: expect.any(String),
-      product: 'Widget',
-      quantity: 1,
+      product: 'test',
+      quantity: 2,
     });
   });
 
